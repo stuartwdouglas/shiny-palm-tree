@@ -1,0 +1,130 @@
+openapi: 3.0.0
+info:
+  title: Verify Payment API
+  description: API for verifying payment transactions
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+paths:
+  /payments/verify:
+    post:
+      summary: Verify a payment
+      description: Verifies the status and validity of a payment transaction
+      operationId: verifyPayment
+      tags:
+        - Payments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - transaction_id
+                - payment_method_id
+                - amount
+                - currency
+              properties:
+                transaction_id:
+                  type: string
+                  description: Transaction identifier
+                payment_method_id:
+                  type: string
+                  description: Payment method identifier
+                amount:
+                  type: number
+                  format: decimal
+                  description: Amount to verify
+                currency:
+                  type: string
+                  description: Currency code
+                  pattern: "^[A-Z]{3}$"
+
+      responses:
+        '200':
+          description: Payment verification completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  verification_status:
+                    type: string
+                    enum: [verified, failed, pending]
+                  authorization_status:
+                    type: string
+                    enum: [authorized, declined, pending]
+                  risk_assessment:
+                    type: object
+                    properties:
+                      score:
+                        type: integer
+                        minimum: 0
+                        maximum: 100
+                      flags:
+                        type: array
+                        items:
+                          type: string
+                      recommendations:
+                        type: array
+                        items:
+                          type: string
+                  processor_response:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      timestamp:
+                        type: string
+                        format: date-time
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                  error_code:
+                    type: string
+        '404':
+          description: Transaction or payment method not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+        '422':
+          description: Verification failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                  error_details:
+                    type: object
+                    properties:
+                      reason:
+                        type: string
+                      risk_factors:
+                        type: array
+                        items:
+                          type: string

@@ -1,0 +1,270 @@
+openapi: 3.0.0
+info:
+  title: Manage Wishlist API
+  description: API for managing customer wishlists
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+paths:
+  /customers/{customerId}/wishlists:
+    get:
+      summary: List wishlists
+      description: Retrieves all wishlists for a customer
+      operationId: listWishlists
+      tags:
+        - Customers
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Wishlists retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  wishlists:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Wishlist'
+
+    post:
+      summary: Create wishlist
+      description: Creates a new wishlist
+      operationId: createWishlist
+      tags:
+        - Customers
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                is_public:
+                  type: boolean
+                  default: false
+
+      responses:
+        '201':
+          description: Wishlist created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Wishlist'
+
+  /customers/{customerId}/wishlists/{wishlistId}/items:
+    post:
+      summary: Add item to wishlist
+      description: Adds a product to a wishlist
+      operationId: addWishlistItem
+      tags:
+        - Customers
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: wishlistId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - product_id
+              properties:
+                product_id:
+                  type: string
+                quantity:
+                  type: integer
+                  minimum: 1
+                  default: 1
+
+      responses:
+        '200':
+          description: Item added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [success]
+                  wishlist_items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WishlistItem'
+
+    delete:
+      summary: Remove item from wishlist
+      description: Removes a product from a wishlist
+      operationId: removeWishlistItem
+      tags:
+        - Customers
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: wishlistId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: product_id
+          in: query
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Item removed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [success]
+                  wishlist_items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WishlistItem'
+
+  /customers/{customerId}/wishlists/{wishlistId}/items/{productId}/move-to-cart:
+    post:
+      summary: Move item to cart
+      description: Moves a wishlist item to the shopping cart
+      operationId: moveToCart
+      tags:
+        - Customers
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: wishlistId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: integer
+                  minimum: 1
+                  default: 1
+
+      responses:
+        '200':
+          description: Item moved to cart successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [success]
+                  cart_update:
+                    type: object
+                    properties:
+                      cart_id:
+                        type: string
+                      added_item:
+                        $ref: '#/components/schemas/CartItem'
+
+components:
+  schemas:
+    Wishlist:
+      type: object
+      properties:
+        wishlist_id:
+          type: string
+        customer_id:
+          type: string
+        name:
+          type: string
+        is_public:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/WishlistItem'
+
+    WishlistItem:
+      type: object
+      properties:
+        product_id:
+          type: string
+        name:
+          type: string
+        price:
+          type: number
+          format: decimal
+        quantity:
+          type: integer
+        added_at:
+          type: string
+          format: date-time
+        in_stock:
+          type: boolean
+
+    CartItem:
+      type: object
+      properties:
+        product_id:
+          type: string
+        quantity:
+          type: integer
+        price:
+          type: number
+          format: decimal
+        subtotal:
+          type: number
+          format: decimal

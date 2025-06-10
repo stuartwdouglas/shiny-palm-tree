@@ -1,0 +1,124 @@
+openapi: 3.0.0
+info:
+  title: Handle Refund API
+  description: API for processing refunds
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+paths:
+  /payments/refunds:
+    post:
+      summary: Process a refund
+      description: Processes refunds for orders or transactions
+      operationId: handleRefund
+      tags:
+        - Payments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - transaction_id
+                - refund_amount
+                - reason
+                - refund_type
+                - customer_id
+              properties:
+                transaction_id:
+                  type: string
+                  description: Original transaction identifier
+                refund_amount:
+                  type: number
+                  format: decimal
+                  description: Amount to refund
+                reason:
+                  type: string
+                  description: Reason for refund
+                refund_type:
+                  type: string
+                  enum: [full, partial]
+                  description: Type of refund
+                customer_id:
+                  type: integer
+                  description: Customer identifier
+                notes:
+                  type: string
+                  description: Additional notes about the refund
+
+      responses:
+        '200':
+          description: Refund processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  refund_id:
+                    type: string
+                    description: Unique refund identifier
+                  status:
+                    type: string
+                    enum: [success, pending]
+                  processed_amount:
+                    type: number
+                    format: decimal
+                    description: Amount actually refunded
+                  processor_response:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      timestamp:
+                        type: string
+                        format: date-time
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                  error_code:
+                    type: string
+        '404':
+          description: Original transaction not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+        '422':
+          description: Refund not possible
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                  error_details:
+                    type: object
+                    properties:
+                      reason:
+                        type: string
+                      suggestion:
+                        type: string

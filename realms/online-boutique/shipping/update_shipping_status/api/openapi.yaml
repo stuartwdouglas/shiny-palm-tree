@@ -1,0 +1,187 @@
+openapi: 3.0.0
+info:
+  title: Update Shipping Status API
+  description: API for updating shipment status and notifying relevant parties
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+paths:
+  /shipping/shipments/{shipmentId}/status:
+    put:
+      summary: Update shipping status
+      description: Updates the status of a shipment and notifies relevant parties
+      operationId: updateShippingStatus
+      tags:
+        - Shipping
+      parameters:
+        - name: shipmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - new_status
+                - timestamp
+              properties:
+                new_status:
+                  type: string
+                  enum: [pending, picked_up, in_transit, out_for_delivery, delivered, exception]
+                  description: Updated shipping status
+                location:
+                  type: object
+                  properties:
+                    city:
+                      type: string
+                    state:
+                      type: string
+                    country:
+                      type: string
+                    postal_code:
+                      type: string
+                    facility:
+                      type: string
+                notes:
+                  type: string
+                  description: Status update notes
+                timestamp:
+                  type: string
+                  format: date-time
+                  description: Update timestamp
+
+      responses:
+        '200':
+          description: Shipping status updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [success]
+                  notification_status:
+                    type: object
+                    properties:
+                      customer:
+                        type: string
+                        enum: [sent, failed, not_required]
+                      internal:
+                        type: string
+                        enum: [sent, failed]
+                      email_sent:
+                        type: boolean
+                      sms_sent:
+                        type: boolean
+                  updated_tracking:
+                    type: object
+                    properties:
+                      current_status:
+                        type: string
+                      location:
+                        type: object
+                        properties:
+                          city:
+                            type: string
+                          state:
+                            type: string
+                          country:
+                            type: string
+                      estimated_delivery:
+                        type: string
+                        format: date
+                      last_update:
+                        type: string
+                        format: date-time
+
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                  validation_errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        field:
+                          type: string
+                        error:
+                          type: string
+
+        '404':
+          description: Shipment not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+
+  /shipping/shipments/{shipmentId}/status/history:
+    get:
+      summary: Get status history
+      description: Retrieves the status update history for a shipment
+      operationId: getStatusHistory
+      tags:
+        - Shipping
+      parameters:
+        - name: shipmentId
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Status history retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  shipment_id:
+                    type: string
+                  current_status:
+                    type: string
+                  history:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: string
+                        timestamp:
+                          type: string
+                          format: date-time
+                        location:
+                          type: object
+                          properties:
+                            city:
+                              type: string
+                            state:
+                              type: string
+                            country:
+                              type: string
+                        notes:
+                          type: string
+                        updated_by:
+                          type: string

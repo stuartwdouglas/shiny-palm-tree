@@ -1,0 +1,143 @@
+openapi: 3.0.0
+info:
+  title: Store Payment Method API
+  description: API for storing customer payment methods
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+paths:
+  /payments/methods:
+    post:
+      summary: Store a payment method
+      description: Securely stores customer payment method information
+      operationId: storePaymentMethod
+      tags:
+        - Payments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - customer_id
+                - payment_type
+                - payment_details
+                - billing_address
+              properties:
+                customer_id:
+                  type: integer
+                  description: Customer identifier
+                payment_type:
+                  type: string
+                  enum: [credit_card, debit_card, bank_account, digital_wallet]
+                  description: Type of payment method
+                payment_details:
+                  type: object
+                  required:
+                    - card_number
+                    - expiry_date
+                    - cvv
+                    - holder_name
+                  properties:
+                    card_number:
+                      type: string
+                      pattern: "^[0-9]{16}$"
+                    expiry_date:
+                      type: string
+                      pattern: "^(0[1-9]|1[0-2])/[0-9]{2}$"
+                    cvv:
+                      type: string
+                      pattern: "^[0-9]{3,4}$"
+                    holder_name:
+                      type: string
+                is_default:
+                  type: boolean
+                  description: Set as default payment method
+                billing_address:
+                  type: object
+                  required:
+                    - street
+                    - city
+                    - country
+                    - postal_code
+                  properties:
+                    street:
+                      type: string
+                    city:
+                      type: string
+                    state:
+                      type: string
+                    country:
+                      type: string
+                    postal_code:
+                      type: string
+
+      responses:
+        '201':
+          description: Payment method stored successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  payment_method_id:
+                    type: string
+                    description: Unique identifier for stored method
+                  status:
+                    type: string
+                    enum: [success]
+                  token:
+                    type: string
+                    description: Tokenized payment information
+                  card_info:
+                    type: object
+                    properties:
+                      last_four:
+                        type: string
+                      card_type:
+                        type: string
+                      expiry_date:
+                        type: string
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                  validation_errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        field:
+                          type: string
+                        error:
+                          type: string
+        '422':
+          description: Payment method validation failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                  error_details:
+                    type: object
+                    properties:
+                      reason:
+                        type: string
+                      suggestion:
+                        type: string

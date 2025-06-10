@@ -1,0 +1,177 @@
+openapi: 3.0.0
+info:
+  title: Manage Profile API
+  description: API for managing customer profile information
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+paths:
+  /customers/{customerId}/profile:
+    get:
+      summary: Get customer profile
+      description: Retrieves customer profile information
+      operationId: getCustomerProfile
+      tags:
+        - Customers
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+      
+      responses:
+        '200':
+          description: Profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  customer_id:
+                    type: string
+                  email:
+                    type: string
+                  first_name:
+                    type: string
+                  last_name:
+                    type: string
+                  phone:
+                    type: string
+                  preferences:
+                    type: object
+                    additionalProperties: true
+                  created_at:
+                    type: string
+                    format: date-time
+                  updated_at:
+                    type: string
+                    format: date-time
+
+    put:
+      summary: Update customer profile
+      description: Updates customer profile information
+      operationId: updateCustomerProfile
+      tags:
+        - Customers
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                phone:
+                  type: string
+                preferences:
+                  type: object
+                  additionalProperties: true
+                password_change:
+                  type: object
+                  required:
+                    - current_password
+                    - new_password
+                  properties:
+                    current_password:
+                      type: string
+                      format: password
+                    new_password:
+                      type: string
+                      format: password
+                      minLength: 8
+
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [success]
+                  updated_fields:
+                    type: array
+                    items:
+                      type: string
+                  verification_required:
+                    type: boolean
+                  message:
+                    type: string
+
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                  validation_errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        field:
+                          type: string
+                        error:
+                          type: string
+
+        '401':
+          description: Invalid password for password change
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+
+        '404':
+          description: Customer not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+
+        '409':
+          description: Email already in use
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string

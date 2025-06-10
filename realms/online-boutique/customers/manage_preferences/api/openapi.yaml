@@ -1,0 +1,152 @@
+openapi: 3.0.0
+info:
+  title: Manage Preferences API
+  description: API for managing customer preferences and settings
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+paths:
+  /customers/{customerId}/preferences:
+    get:
+      summary: Get customer preferences
+      description: Retrieves customer preferences and settings
+      operationId: getPreferences
+      tags:
+        - Customers
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+      
+      responses:
+        '200':
+          description: Preferences retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Preferences'
+
+    put:
+      summary: Update customer preferences
+      description: Updates customer preferences and settings
+      operationId: updatePreferences
+      tags:
+        - Customers
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreferencesInput'
+
+      responses:
+        '200':
+          description: Preferences updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [success]
+                  updated_preferences:
+                    $ref: '#/components/schemas/Preferences'
+                  effective_date:
+                    type: string
+                    format: date-time
+                  message:
+                    type: string
+
+components:
+  schemas:
+    Preferences:
+      type: object
+      properties:
+        email_notifications:
+          type: object
+          properties:
+            order_updates:
+              type: boolean
+            promotions:
+              type: boolean
+            newsletters:
+              type: boolean
+            account_updates:
+              type: boolean
+        marketing_preferences:
+          type: object
+          properties:
+            email_marketing:
+              type: boolean
+            sms_marketing:
+              type: boolean
+            personalized_ads:
+              type: boolean
+        language:
+          type: string
+          example: "en-US"
+        currency:
+          type: string
+          example: "USD"
+        privacy_settings:
+          type: object
+          properties:
+            data_sharing:
+              type: boolean
+            analytics_tracking:
+              type: boolean
+            third_party_marketing:
+              type: boolean
+        updated_at:
+          type: string
+          format: date-time
+
+    PreferencesInput:
+      type: object
+      properties:
+        email_notifications:
+          type: object
+          properties:
+            order_updates:
+              type: boolean
+            promotions:
+              type: boolean
+            newsletters:
+              type: boolean
+            account_updates:
+              type: boolean
+        marketing_preferences:
+          type: object
+          properties:
+            email_marketing:
+              type: boolean
+            sms_marketing:
+              type: boolean
+            personalized_ads:
+              type: boolean
+        language:
+          type: string
+          pattern: "^[a-z]{2}-[A-Z]{2}$"
+        currency:
+          type: string
+          pattern: "^[A-Z]{3}$"
+        privacy_settings:
+          type: object
+          properties:
+            data_sharing:
+              type: boolean
+            analytics_tracking:
+              type: boolean
+            third_party_marketing:
+              type: boolean

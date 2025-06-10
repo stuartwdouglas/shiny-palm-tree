@@ -1,0 +1,211 @@
+openapi: 3.0.0
+info:
+  title: Track Shipment API
+  description: API for tracking shipment status and location
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+paths:
+  /shipping/track:
+    get:
+      summary: Track a shipment
+      description: Provides real-time tracking information for shipments
+      operationId: trackShipment
+      tags:
+        - Shipping
+      parameters:
+        - name: tracking_number
+          in: query
+          required: true
+          description: Shipment tracking number
+          schema:
+            type: string
+        - name: carrier
+          in: query
+          required: true
+          description: Shipping carrier
+          schema:
+            type: string
+        - name: shipment_id
+          in: query
+          required: false
+          description: Internal shipment identifier
+          schema:
+            type: string
+        - name: customer_id
+          in: query
+          required: false
+          description: Customer identifier
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Tracking information retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tracking_status:
+                    type: string
+                    enum: [in_transit, delivered, exception, pending]
+                  location:
+                    type: object
+                    properties:
+                      city:
+                        type: string
+                      state:
+                        type: string
+                      country:
+                        type: string
+                      postal_code:
+                        type: string
+                      timestamp:
+                        type: string
+                        format: date-time
+                  delivery_estimate:
+                    type: string
+                    format: date
+                  tracking_history:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: string
+                        location:
+                          type: object
+                          properties:
+                            city:
+                              type: string
+                            state:
+                              type: string
+                            country:
+                              type: string
+                        timestamp:
+                          type: string
+                          format: date-time
+                        description:
+                          type: string
+                  carrier_details:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      service_level:
+                        type: string
+                      tracking_url:
+                        type: string
+                        format: uri
+
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+
+        '404':
+          description: Tracking information not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+
+  /shipping/shipments/{shipmentId}/track:
+    get:
+      summary: Track shipment by internal ID
+      description: Provides tracking information using internal shipment ID
+      operationId: trackShipmentById
+      tags:
+        - Shipping
+      parameters:
+        - name: shipmentId
+          in: path
+          required: true
+          description: Internal shipment identifier
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Tracking information retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrackingInfo'
+
+        '404':
+          description: Shipment not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+
+components:
+  schemas:
+    TrackingInfo:
+      type: object
+      properties:
+        tracking_status:
+          type: string
+          enum: [in_transit, delivered, exception, pending]
+        location:
+          type: object
+          properties:
+            city:
+              type: string
+            state:
+              type: string
+            country:
+              type: string
+            postal_code:
+              type: string
+            timestamp:
+              type: string
+              format: date-time
+        delivery_estimate:
+          type: string
+          format: date
+        tracking_history:
+          type: array
+          items:
+            type: object
+            properties:
+              status:
+                type: string
+              location:
+                type: object
+                properties:
+                  city:
+                    type: string
+                  state:
+                    type: string
+                  country:
+                    type: string
+              timestamp:
+                type: string
+                format: date-time
+              description:
+                type: string

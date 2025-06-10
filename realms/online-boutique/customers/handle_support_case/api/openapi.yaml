@@ -1,0 +1,258 @@
+openapi: 3.0.0
+info:
+  title: Handle Support Case API
+  description: API for managing customer support cases
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+paths:
+  /customers/{customerId}/support-cases:
+    post:
+      summary: Create support case
+      description: Creates a new customer support case
+      operationId: createSupportCase
+      tags:
+        - Customers
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - case_type
+                - subject
+                - description
+              properties:
+                case_type:
+                  type: string
+                  enum: [order_issue, product_inquiry, technical_support, billing_issue, other]
+                subject:
+                  type: string
+                  maxLength: 200
+                description:
+                  type: string
+                priority:
+                  type: string
+                  enum: [low, medium, high, urgent]
+                  default: medium
+                attachments:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      file_name:
+                        type: string
+                      file_type:
+                        type: string
+                      file_url:
+                        type: string
+                      file_size:
+                        type: integer
+
+      responses:
+        '201':
+          description: Support case created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  case_id:
+                    type: string
+                  status:
+                    type: string
+                    enum: [open]
+                  assigned_agent:
+                    type: string
+                  estimated_response_time:
+                    type: string
+                  message:
+                    type: string
+
+    get:
+      summary: List support cases
+      description: Retrieves all support cases for a customer
+      operationId: listSupportCases
+      tags:
+        - Customers
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [open, closed, pending]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+
+      responses:
+        '200':
+          description: Support cases retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cases:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SupportCase'
+                  total_count:
+                    type: integer
+                  page_count:
+                    type: integer
+
+  /customers/{customerId}/support-cases/{caseId}:
+    get:
+      summary: Get support case details
+      description: Retrieves details of a specific support case
+      operationId: getSupportCase
+      tags:
+        - Customers
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Support case retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupportCase'
+
+    put:
+      summary: Update support case
+      description: Updates an existing support case
+      operationId: updateSupportCase
+      tags:
+        - Customers
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                priority:
+                  type: string
+                  enum: [low, medium, high, urgent]
+                status:
+                  type: string
+                  enum: [open, closed, pending]
+                additional_notes:
+                  type: string
+
+      responses:
+        '200':
+          description: Support case updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [success]
+                  message:
+                    type: string
+
+components:
+  schemas:
+    SupportCase:
+      type: object
+      properties:
+        case_id:
+          type: string
+        customer_id:
+          type: string
+        case_type:
+          type: string
+        subject:
+          type: string
+        description:
+          type: string
+        priority:
+          type: string
+        status:
+          type: string
+        assigned_agent:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        attachments:
+          type: array
+          items:
+            type: object
+            properties:
+              file_name:
+                type: string
+              file_type:
+                type: string
+              file_url:
+                type: string
+              file_size:
+                type: integer
+        history:
+          type: array
+          items:
+            type: object
+            properties:
+              action:
+                type: string
+              timestamp:
+                type: string
+                format: date-time
+              actor:
+                type: string
+              notes:
+                type: string

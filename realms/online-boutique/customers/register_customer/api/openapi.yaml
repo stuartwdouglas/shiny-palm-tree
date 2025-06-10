@@ -1,0 +1,174 @@
+openapi: 3.0.0
+info:
+  title: Register Customer API
+  description: API for creating new customer accounts
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+paths:
+  /customers/register:
+    post:
+      summary: Register a new customer
+      description: Creates a new customer account in the system
+      operationId: registerCustomer
+      tags:
+        - Customers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - first_name
+                - last_name
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Customer email address
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  description: Account password
+                first_name:
+                  type: string
+                  description: Customer first name
+                last_name:
+                  type: string
+                  description: Customer last name
+                phone:
+                  type: string
+                  pattern: "^\\+?[1-9]\\d{1,14}$"
+                  description: Contact phone number
+                marketing_consent:
+                  type: boolean
+                  description: Marketing communications opt-in
+                  default: false
+
+      responses:
+        '201':
+          description: Customer registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  customer_id:
+                    type: string
+                    description: Unique customer identifier
+                  status:
+                    type: string
+                    enum: [success]
+                  verification_token:
+                    type: string
+                    description: Email verification token
+                  welcome_email_status:
+                    type: string
+                    enum: [sent, queued, failed]
+                  message:
+                    type: string
+                    example: "Registration successful. Please verify your email."
+
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                  validation_errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        field:
+                          type: string
+                        error:
+                          type: string
+
+        '409':
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                    example: "Email address already registered"
+
+  /customers/verify-email:
+    post:
+      summary: Verify customer email
+      description: Verifies a customer's email address using the verification token
+      operationId: verifyCustomerEmail
+      tags:
+        - Customers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - verification_token
+              properties:
+                verification_token:
+                  type: string
+                  description: Email verification token
+
+      responses:
+        '200':
+          description: Email verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [success]
+                  message:
+                    type: string
+                    example: "Email verified successfully"
+
+        '400':
+          description: Invalid token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+
+        '410':
+          description: Token expired
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                    example: "Verification token has expired"

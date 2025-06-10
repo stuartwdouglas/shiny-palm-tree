@@ -1,0 +1,193 @@
+openapi: 3.0.0
+info:
+  title: Manage Subscription API
+  description: API for managing recurring payment subscriptions
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+paths:
+  /payments/subscriptions:
+    post:
+      summary: Create a subscription
+      description: Creates a new recurring payment subscription
+      operationId: createSubscription
+      tags:
+        - Payments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - customer_id
+                - subscription_plan
+                - payment_method_id
+                - billing_cycle
+                - start_date
+              properties:
+                customer_id:
+                  type: integer
+                  description: Customer identifier
+                subscription_plan:
+                  type: string
+                  description: Plan identifier
+                payment_method_id:
+                  type: string
+                  description: Payment method to use
+                billing_cycle:
+                  type: string
+                  enum: [monthly, quarterly, annual]
+                  description: Billing frequency
+                start_date:
+                  type: string
+                  format: date
+                  description: Subscription start date
+                metadata:
+                  type: object
+                  description: Additional subscription details
+                  additionalProperties: true
+
+      responses:
+        '201':
+          description: Subscription created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subscription_id:
+                    type: string
+                    description: Unique subscription identifier
+                  status:
+                    type: string
+                    enum: [active, pending, failed]
+                  next_billing_date:
+                    type: string
+                    format: date
+                  payment_schedule:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          format: date
+                        amount:
+                          type: number
+                          format: decimal
+                        status:
+                          type: string
+                          enum: [scheduled, pending, processed]
+
+    get:
+      summary: List subscriptions
+      description: Retrieves all subscriptions for a customer
+      operationId: listSubscriptions
+      tags:
+        - Payments
+      parameters:
+        - name: customer_id
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, pending, cancelled, expired]
+
+      responses:
+        '200':
+          description: Subscriptions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subscriptions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        subscription_id:
+                          type: string
+                        plan:
+                          type: string
+                        status:
+                          type: string
+                        next_billing_date:
+                          type: string
+                          format: date
+                        amount:
+                          type: number
+                          format: decimal
+
+  /payments/subscriptions/{subscriptionId}:
+    put:
+      summary: Update subscription
+      description: Updates an existing subscription
+      operationId: updateSubscription
+      tags:
+        - Payments
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                payment_method_id:
+                  type: string
+                billing_cycle:
+                  type: string
+                  enum: [monthly, quarterly, annual]
+                status:
+                  type: string
+                  enum: [active, paused, cancelled]
+
+      responses:
+        '200':
+          description: Subscription updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [success]
+                  subscription:
+                    type: object
+                    properties:
+                      subscription_id:
+                        type: string
+                      updated_fields:
+                        type: array
+                        items:
+                          type: string
+                      next_billing_date:
+                        type: string
+                        format: date
+
+        '404':
+          description: Subscription not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string

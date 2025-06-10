@@ -1,0 +1,180 @@
+openapi: 3.0.0
+info:
+  title: Handle Authentication API
+  description: API for managing customer authentication and sessions
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+paths:
+  /customers/login:
+    post:
+      summary: Customer login
+      description: Authenticates a customer and creates a session
+      operationId: loginCustomer
+      tags:
+        - Customers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+                remember_me:
+                  type: boolean
+                  default: false
+                device_info:
+                  type: object
+                  properties:
+                    device_type:
+                      type: string
+                      enum: [mobile, tablet, desktop, other]
+                    os:
+                      type: string
+                    browser:
+                      type: string
+                    ip_address:
+                      type: string
+
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session_token:
+                    type: string
+                  status:
+                    type: string
+                    enum: [success]
+                  customer_id:
+                    type: string
+                  permissions:
+                    type: array
+                    items:
+                      type: string
+                  expires_at:
+                    type: string
+                    format: date-time
+
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+
+        '401':
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                  remaining_attempts:
+                    type: integer
+
+  /customers/logout:
+    post:
+      summary: Customer logout
+      description: Ends a customer session
+      operationId: logoutCustomer
+      tags:
+        - Customers
+      security:
+        - BearerAuth: []
+      
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [success]
+                  message:
+                    type: string
+
+        '401':
+          description: Invalid or expired session
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+
+  /customers/refresh-token:
+    post:
+      summary: Refresh session token
+      description: Refreshes an existing session token
+      operationId: refreshToken
+      tags:
+        - Customers
+      security:
+        - BearerAuth: []
+      
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session_token:
+                    type: string
+                  expires_at:
+                    type: string
+                    format: date-time
+
+        '401':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

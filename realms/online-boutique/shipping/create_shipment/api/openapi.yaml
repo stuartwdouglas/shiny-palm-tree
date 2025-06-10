@@ -1,0 +1,168 @@
+openapi: 3.0.0
+info:
+  title: Create Shipment API
+  description: API for creating new shipments
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+paths:
+  /shipping/shipments:
+    post:
+      summary: Create a new shipment
+      description: Creates a new shipment for an order
+      operationId: createShipment
+      tags:
+        - Shipping
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - order_id
+                - shipping_method
+                - shipping_address
+                - items
+              properties:
+                order_id:
+                  type: string
+                  description: Order identifier
+                shipping_method:
+                  type: string
+                  description: Selected shipping method
+                shipping_address:
+                  type: object
+                  required:
+                    - street_address1
+                    - city
+                    - postal_code
+                    - country
+                  properties:
+                    street_address1:
+                      type: string
+                    street_address2:
+                      type: string
+                    city:
+                      type: string
+                    state:
+                      type: string
+                    postal_code:
+                      type: string
+                    country:
+                      type: string
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - product_id
+                      - quantity
+                    properties:
+                      product_id:
+                        type: string
+                      quantity:
+                        type: integer
+                      weight:
+                        type: number
+                      dimensions:
+                        type: object
+                        properties:
+                          length:
+                            type: number
+                          width:
+                            type: number
+                          height:
+                            type: number
+                          unit:
+                            type: string
+                            enum: [cm, inch]
+                special_instructions:
+                  type: string
+                  description: Special handling instructions
+
+      responses:
+        '201':
+          description: Shipment created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  shipment_id:
+                    type: string
+                    description: Unique shipment identifier
+                  tracking_number:
+                    type: string
+                    description: Shipping tracking number
+                  label_url:
+                    type: string
+                    format: uri
+                    description: URL to download shipping label
+                  estimated_delivery:
+                    type: string
+                    format: date
+                  carrier_info:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      service_level:
+                        type: string
+                      pickup_date:
+                        type: string
+                        format: date
+
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                  validation_errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        field:
+                          type: string
+                        error:
+                          type: string
+
+        '422':
+          description: Unable to create shipment
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                  reason:
+                    type: string
+
+        '409':
+          description: Shipment already exists for order
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                  existing_shipment_id:
+                    type: string

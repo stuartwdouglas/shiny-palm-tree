@@ -1,0 +1,186 @@
+openapi: 3.0.0
+info:
+  title: Calculate Shipping API
+  description: API for calculating shipping costs and delivery options
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+paths:
+  /shipping/calculate:
+    post:
+      summary: Calculate shipping costs
+      description: Calculates shipping costs based on order details and delivery options
+      operationId: calculateShipping
+      tags:
+        - Shipping
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - order_details
+                - shipping_address
+              properties:
+                order_details:
+                  type: object
+                  required:
+                    - items
+                    - total_weight
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          product_id:
+                            type: string
+                          quantity:
+                            type: integer
+                          weight:
+                            type: number
+                            format: float
+                          dimensions:
+                            type: object
+                            properties:
+                              length:
+                                type: number
+                              width:
+                                type: number
+                              height:
+                                type: number
+                              unit:
+                                type: string
+                                enum: [cm, inch]
+                    total_weight:
+                      type: number
+                      format: float
+                    dimensions:
+                      type: object
+                      properties:
+                        length:
+                          type: number
+                        width:
+                          type: number
+                        height:
+                          type: number
+                        unit:
+                          type: string
+                          enum: [cm, inch]
+                shipping_address:
+                  type: object
+                  required:
+                    - postal_code
+                    - country
+                  properties:
+                    street_address1:
+                      type: string
+                    street_address2:
+                      type: string
+                    city:
+                      type: string
+                    state:
+                      type: string
+                    postal_code:
+                      type: string
+                    country:
+                      type: string
+                shipping_method:
+                  type: string
+                  enum: [standard, express, overnight]
+                delivery_speed:
+                  type: string
+                  enum: [economy, standard, express, priority]
+
+      responses:
+        '200':
+          description: Shipping calculations completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  shipping_options:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        method:
+                          type: string
+                        carrier:
+                          type: string
+                        service_level:
+                          type: string
+                        cost:
+                          type: number
+                          format: decimal
+                        estimated_days:
+                          type: object
+                          properties:
+                            min:
+                              type: integer
+                            max:
+                              type: integer
+                  rates:
+                    type: object
+                    additionalProperties:
+                      type: number
+                      format: decimal
+                  estimated_delivery_dates:
+                    type: object
+                    additionalProperties:
+                      type: string
+                      format: date
+                  restrictions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                        description:
+                          type: string
+                        affected_methods:
+                          type: array
+                          items:
+                            type: string
+
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                  validation_errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        field:
+                          type: string
+                        error:
+                          type: string
+
+        '422':
+          description: Unable to calculate shipping
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                  reason:
+                    type: string
