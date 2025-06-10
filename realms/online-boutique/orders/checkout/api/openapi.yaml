@@ -1,0 +1,131 @@
+openapi: 3.0.0
+info:
+  title: Checkout API
+  description: API for converting a shopping cart into an order
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+paths:
+  /orders/checkout:
+    post:
+      summary: Checkout cart to create order
+      description: Converts a shopping cart into an order and initiates payment
+      operationId: checkout
+      tags:
+        - Orders
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - cart_id
+                - customer_id
+                - shipping_address_id
+                - billing_address_id
+                - payment_method_id
+                - shipping_method_id
+              properties:
+                cart_id:
+                  type: string
+                  description: Cart identifier
+                customer_id:
+                  type: integer
+                  description: Customer identifier
+                shipping_address_id:
+                  type: integer
+                  description: Shipping address identifier
+                billing_address_id:
+                  type: integer
+                  description: Billing address identifier
+                payment_method_id:
+                  type: integer
+                  description: Payment method identifier
+                shipping_method_id:
+                  type: integer
+                  description: Shipping method identifier
+                coupon_code:
+                  type: string
+                  description: Optional discount coupon code
+
+      responses:
+        '201':
+          description: Order created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  order_id:
+                    type: string
+                    description: New order identifier
+                  status:
+                    type: string
+                    enum: [success]
+                  message:
+                    type: string
+                  order_summary:
+                    type: object
+                    properties:
+                      subtotal:
+                        type: number
+                        format: decimal
+                      shipping:
+                        type: number
+                        format: decimal
+                      tax:
+                        type: number
+                        format: decimal
+                      total:
+                        type: number
+                        format: decimal
+                      discount:
+                        type: number
+                        format: decimal
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+        '404':
+          description: Cart not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+        '422':
+          description: Checkout failed (e.g., insufficient stock, invalid payment)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                  details:
+                    type: object
+                    properties:
+                      error_type:
+                        type: string
+                        enum: [stock, payment, validation]
+                      error_details:
+                        type: string

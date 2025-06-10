@@ -1,0 +1,131 @@
+openapi: 3.0.0
+info:
+  title: Cancel Order API
+  description: API for canceling orders
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+paths:
+  /orders/{orderId}/cancel:
+    post:
+      summary: Cancel an order
+      description: Cancels an order and handles related processes
+      operationId: cancelOrder
+      tags:
+        - Orders
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          description: Order identifier
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reason
+                - cancellation_type
+                - refund_method
+              properties:
+                reason:
+                  type: string
+                  description: Cancellation reason
+                cancellation_type:
+                  type: string
+                  enum: [full, partial]
+                  description: Type of cancellation
+                items:
+                  type: array
+                  description: Required for partial cancellation
+                  items:
+                    type: object
+                    properties:
+                      item_id:
+                        type: integer
+                      quantity:
+                        type: integer
+                refund_method:
+                  type: string
+                  enum: [original_payment, store_credit, bank_transfer]
+                  description: How to process the refund
+
+      responses:
+        '200':
+          description: Order cancelled successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [success]
+                  message:
+                    type: string
+                  refund_status:
+                    type: string
+                    enum: [initiated, processed, completed]
+                  inventory_status:
+                    type: string
+                    enum: [restored, pending, failed]
+                  cancellation_details:
+                    type: object
+                    properties:
+                      cancelled_items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            item_id:
+                              type: integer
+                            quantity:
+                              type: integer
+                      refund_amount:
+                        type: number
+                        format: decimal
+                      refund_id:
+                        type: string
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+        '404':
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+        '422':
+          description: Cancellation not possible
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                  reason:
+                    type: string

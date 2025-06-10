@@ -1,0 +1,80 @@
+openapi: 3.0.0
+info:
+  title: Delete Product API
+  description: API for deleting or archiving products in the online boutique system
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+paths:
+  /inventory/products/{productId}:
+    delete:
+      summary: Delete or archive a product
+      description: Marks a product as deleted or archives it from the system
+      operationId: deleteProduct
+      tags:
+        - Inventory
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: ID of the product to delete
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - delete_type
+              properties:
+                delete_type:
+                  type: string
+                  enum: [archive, soft_delete]
+                  description: Type of deletion
+                reason:
+                  type: string
+                  description: Reason for deletion
+
+      responses:
+        '200':
+          description: Product successfully deleted/archived
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [success]
+                  message:
+                    type: string
+                    example: "Product successfully archived"
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                    example: "Product not found"

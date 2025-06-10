@@ -1,0 +1,102 @@
+openapi: 3.0.0
+info:
+  title: Process Order API
+  description: API for handling order processing workflow
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+paths:
+  /orders/{orderId}/process:
+    post:
+      summary: Process order workflow
+      description: Handles the order processing workflow after checkout
+      operationId: processOrder
+      tags:
+        - Orders
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          description: Order identifier
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - action
+              properties:
+                action:
+                  type: string
+                  enum: [verify_payment, confirm_stock, initiate_fulfillment]
+                  description: Processing step to execute
+
+      responses:
+        '200':
+          description: Processing step completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [success]
+                  message:
+                    type: string
+                  order_status:
+                    type: string
+                    enum: [payment_verified, stock_confirmed, fulfillment_initiated]
+                  next_steps:
+                    type: array
+                    items:
+                      type: string
+                      enum: [verify_payment, confirm_stock, initiate_fulfillment]
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+        '404':
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+        '422':
+          description: Processing step failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                  error_details:
+                    type: object
+                    properties:
+                      step:
+                        type: string
+                      reason:
+                        type: string

@@ -1,0 +1,136 @@
+openapi: 3.0.0
+info:
+  title: Update Cart API
+  description: API for updating shopping cart contents
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+paths:
+  /orders/carts/{cartId}:
+    put:
+      summary: Update cart contents
+      description: Adds, removes, or updates items in a shopping cart
+      operationId: updateCart
+      tags:
+        - Orders
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          description: Cart identifier
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - action
+                - items
+              properties:
+                action:
+                  type: string
+                  enum: [add, remove, update]
+                  description: Type of update action
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - product_id
+                      - quantity
+                    properties:
+                      product_id:
+                        type: integer
+                        description: ID of the product
+                      quantity:
+                        type: integer
+                        description: Quantity to add/remove/update
+                        minimum: 0
+                      price:
+                        type: number
+                        format: decimal
+                        description: Price at time of addition
+      
+      responses:
+        '200':
+          description: Cart updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [success]
+                  message:
+                    type: string
+                  updated_cart:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            product_id:
+                              type: integer
+                            quantity:
+                              type: integer
+                            price:
+                              type: number
+                            subtotal:
+                              type: number
+                      total:
+                        type: number
+                      item_count:
+                        type: integer
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+        '404':
+          description: Cart not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+        '422':
+          description: Invalid operation (e.g., insufficient stock)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                  details:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        product_id:
+                          type: integer
+                        error:
+                          type: string

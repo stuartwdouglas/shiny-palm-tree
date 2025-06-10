@@ -1,0 +1,113 @@
+openapi: 3.0.0
+info:
+  title: Update Product API
+  description: API for updating existing products in the online boutique system
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+paths:
+  /inventory/products/{productId}:
+    put:
+      summary: Update an existing product
+      description: Updates an existing product's information and details
+      operationId: updateProduct
+      tags:
+        - Inventory
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: ID of the product to update
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: New product name
+                description:
+                  type: string
+                  description: New product description
+                price:
+                  type: number
+                  format: decimal
+                  description: New product price
+                category_id:
+                  type: integer
+                  description: New category ID
+                sku:
+                  type: string
+                  description: New SKU
+                images:
+                  type: array
+                  description: Updated product images
+                  items:
+                    type: object
+                    properties:
+                      image_url:
+                        type: string
+                        format: uri
+                      is_primary:
+                        type: boolean
+                attributes:
+                  type: array
+                  description: Updated product attributes
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      value:
+                        type: string
+
+      responses:
+        '200':
+          description: Product successfully updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [success]
+                  message:
+                    type: string
+                    example: "Product successfully updated"
+                  updated_fields:
+                    type: array
+                    items:
+                      type: string
+                    example: ["name", "price", "description"]
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                    example: "Product not found"

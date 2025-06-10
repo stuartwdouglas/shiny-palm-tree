@@ -1,0 +1,137 @@
+openapi: 3.0.0
+info:
+  title: Modify Order API
+  description: API for modifying existing orders
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+paths:
+  /orders/{orderId}/modify:
+    put:
+      summary: Modify an order
+      description: Modifies an existing order before fulfillment
+      operationId: modifyOrder
+      tags:
+        - Orders
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          description: Order identifier
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - modification_type
+                - modification_details
+                - reason
+              properties:
+                modification_type:
+                  type: string
+                  enum: [update_quantity, change_shipping, change_address]
+                  description: Type of modification
+                modification_details:
+                  type: object
+                  oneOf:
+                    - type: object
+                      properties:
+                        item_id:
+                          type: integer
+                        new_quantity:
+                          type: integer
+                          minimum: 0
+                    - type: object
+                      properties:
+                        new_shipping_method:
+                          type: integer
+                    - type: object
+                      properties:
+                        new_address:
+                          type: object
+                          properties:
+                            street:
+                              type: string
+                            city:
+                              type: string
+                            state:
+                              type: string
+                            postal_code:
+                              type: string
+                            country:
+                              type: string
+                reason:
+                  type: string
+                  description: Reason for modification
+
+      responses:
+        '200':
+          description: Order modified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [success]
+                  message:
+                    type: string
+                  updated_order:
+                    type: object
+                    properties:
+                      order_id:
+                        type: string
+                      modified_fields:
+                        type: array
+                        items:
+                          type: string
+                      new_total:
+                        type: number
+                  price_adjustment:
+                    type: number
+                    format: decimal
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+        '404':
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+        '422':
+          description: Modification not possible
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                  reason:
+                    type: string

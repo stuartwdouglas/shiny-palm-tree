@@ -1,0 +1,131 @@
+openapi: 3.0.0
+info:
+  title: Manage Categories API
+  description: API for managing product categories
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+paths:
+  /inventory/categories:
+    post:
+      summary: Create a new category
+      description: Creates a new product category
+      operationId: createCategory
+      tags:
+        - Inventory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  description: Category name
+                description:
+                  type: string
+                  description: Category description
+                parent_category_id:
+                  type: integer
+                  description: ID of parent category
+      responses:
+        '201':
+          description: Category created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  category_id:
+                    type: integer
+                  status:
+                    type: string
+                    enum: [success]
+                  message:
+                    type: string
+
+  /inventory/categories/{categoryId}:
+    put:
+      summary: Update a category
+      description: Updates an existing product category
+      operationId: updateCategory
+      tags:
+        - Inventory
+      parameters:
+        - name: categoryId
+          in: path
+          required: true
+          description: ID of the category to update
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: New category name
+                description:
+                  type: string
+                  description: New category description
+                parent_category_id:
+                  type: integer
+                  description: New parent category ID
+      responses:
+        '200':
+          description: Category updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [success]
+                  message:
+                    type: string
+
+    delete:
+      summary: Delete a category
+      description: Deletes a product category
+      operationId: deleteCategory
+      tags:
+        - Inventory
+      parameters:
+        - name: categoryId
+          in: path
+          required: true
+          description: ID of the category to delete
+          schema:
+            type: integer
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                transfer_products_to:
+                  type: integer
+                  description: Category ID to transfer products to
+      responses:
+        '200':
+          description: Category deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [success]
+                  message:
+                    type: string

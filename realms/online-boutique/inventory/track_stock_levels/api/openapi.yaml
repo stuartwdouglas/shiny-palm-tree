@@ -1,0 +1,82 @@
+openapi: 3.0.0
+info:
+  title: Track Stock Levels API
+  description: API for monitoring inventory levels and generating alerts
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+paths:
+  /inventory/stock/track:
+    get:
+      summary: Track stock levels
+      description: Monitors inventory levels and generates alerts for low stock
+      operationId: trackStockLevels
+      tags:
+        - Inventory
+      parameters:
+        - name: product_id
+          in: query
+          description: Specific product to check
+          schema:
+            type: integer
+        - name: check_type
+          in: query
+          description: Type of check to perform
+          schema:
+            type: string
+            enum: [all, low_stock, out_of_stock]
+            default: all
+        - name: threshold_override
+          in: query
+          description: Override default low stock threshold
+          schema:
+            type: integer
+            minimum: 0
+
+      responses:
+        '200':
+          description: Stock levels retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  alerts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        product_id:
+                          type: integer
+                        current_stock:
+                          type: integer
+                        threshold:
+                          type: integer
+                        alert_type:
+                          type: string
+                          enum: [low_stock, out_of_stock]
+                        message:
+                          type: string
+                  summary:
+                    type: object
+                    properties:
+                      total_products:
+                        type: integer
+                      low_stock_count:
+                        type: integer
+                      out_of_stock_count:
+                        type: integer
+        '400':
+          description: Invalid input parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string

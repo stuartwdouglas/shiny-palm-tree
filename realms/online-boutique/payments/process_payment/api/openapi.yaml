@@ -1,0 +1,144 @@
+openapi: 3.0.0
+info:
+  title: Process Payment API
+  description: API for processing payment transactions
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+paths:
+  /payments/process:
+    post:
+      summary: Process a payment transaction
+      description: Processes a payment transaction for an order
+      operationId: processPayment
+      tags:
+        - Payments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - order_id
+                - payment_method_id
+                - amount
+                - currency
+                - customer_id
+                - billing_address
+              properties:
+                order_id:
+                  type: string
+                  description: Order identifier
+                payment_method_id:
+                  type: integer
+                  description: Payment method identifier
+                amount:
+                  type: number
+                  format: decimal
+                  description: Amount to charge
+                currency:
+                  type: string
+                  description: Currency code
+                  example: "USD"
+                  pattern: "^[A-Z]{3}$"
+                customer_id:
+                  type: integer
+                  description: Customer identifier
+                billing_address:
+                  type: object
+                  required:
+                    - street
+                    - city
+                    - country
+                    - postal_code
+                  properties:
+                    street:
+                      type: string
+                    city:
+                      type: string
+                    state:
+                      type: string
+                    country:
+                      type: string
+                    postal_code:
+                      type: string
+
+      responses:
+        '200':
+          description: Payment processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transaction_id:
+                    type: string
+                    description: Unique transaction identifier
+                  status:
+                    type: string
+                    enum: [success, pending]
+                  authorization_code:
+                    type: string
+                    description: Payment authorization code
+                  processor_response:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                      message:
+                        type: string
+                      timestamp:
+                        type: string
+                        format: date-time
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                  error_code:
+                    type: string
+        '402':
+          description: Payment failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                  error_code:
+                    type: string
+                  error_details:
+                    type: object
+                    properties:
+                      reason:
+                        type: string
+                      suggestion:
+                        type: string
+        '422':
+          description: Payment method invalid or expired
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                  error_code:
+                    type: string

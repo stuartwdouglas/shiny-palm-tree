@@ -1,0 +1,127 @@
+openapi: 3.0.0
+info:
+  title: Add Product API
+  description: API for creating new products in the online boutique system
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+paths:
+  /inventory/products:
+    post:
+      summary: Create a new product
+      description: Creates a new product with all associated details including inventory levels
+      operationId: addProduct
+      tags:
+        - Inventory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - description
+                - price
+                - category_id
+                - sku
+                - initial_stock
+              properties:
+                name:
+                  type: string
+                  description: Product name
+                  example: "Vintage Leather Bag"
+                description:
+                  type: string
+                  description: Product description
+                  example: "Handcrafted leather bag with antique finish"
+                price:
+                  type: number
+                  format: decimal
+                  description: Product price
+                  example: 199.99
+                category_id:
+                  type: integer
+                  description: ID of the product category
+                  example: 5
+                sku:
+                  type: string
+                  description: Unique stock keeping unit
+                  example: "VLB-2025-001"
+                initial_stock:
+                  type: integer
+                  description: Initial inventory quantity
+                  minimum: 0
+                  example: 50
+                low_stock_threshold:
+                  type: integer
+                  description: Threshold for low stock alerts
+                  minimum: 0
+                  example: 10
+                images:
+                  type: array
+                  description: Product images
+                  items:
+                    type: object
+                    properties:
+                      image_url:
+                        type: string
+                        format: uri
+                      is_primary:
+                        type: boolean
+                attributes:
+                  type: array
+                  description: Product attributes
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      value:
+                        type: string
+
+      responses:
+        '201':
+          description: Product successfully created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  product_id:
+                    type: integer
+                    description: ID of the newly created product
+                  status:
+                    type: string
+                    enum: [success]
+                  message:
+                    type: string
+                    example: "Product successfully created"
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                    example: "Invalid input data"
+        '409':
+          description: SKU already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                    example: "SKU already exists"

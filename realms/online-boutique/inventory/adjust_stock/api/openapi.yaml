@@ -1,0 +1,87 @@
+openapi: 3.0.0
+info:
+  title: Adjust Stock API
+  description: API for adjusting product inventory levels
+  version: 1.0.0
+
+servers:
+  - url: /api/v1
+
+paths:
+  /inventory/stock/adjust:
+    post:
+      summary: Adjust product stock level
+      description: Adjusts the inventory level for a product
+      operationId: adjustStock
+      tags:
+        - Inventory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - product_id
+                - quantity_change
+                - reason
+              properties:
+                product_id:
+                  type: integer
+                  description: ID of the product
+                quantity_change:
+                  type: integer
+                  description: Amount to adjust (positive for increase, negative for decrease)
+                reason:
+                  type: string
+                  enum: [restock, sale, damage, audit]
+                  description: Reason for adjustment
+                notes:
+                  type: string
+                  description: Additional notes about the adjustment
+
+      responses:
+        '200':
+          description: Stock successfully adjusted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [success]
+                  message:
+                    type: string
+                    example: "Stock successfully adjusted"
+                  new_quantity:
+                    type: integer
+                    description: Updated stock level
+                  adjustment_id:
+                    type: integer
+                    description: ID of the adjustment record
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [error]
+                  message:
+                    type: string
+                    example: "Product not found"
